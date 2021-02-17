@@ -8,6 +8,11 @@
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "prettier": {
+    "jsxBracketSameLine": true,
+    "singleQuote": true,
+    "printWidth": 110
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

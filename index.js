@@ -1,10 +1,17 @@
-import { Client } from "@elastic/elasticsearch";
-import sql from "mssql";
-import { getData } from "./operations.js";
+import { getData, insertBulk } from './operations.js';
 
-await sql.connect("mssql://username:password@localhost/database");
-const client = new Client({
-  node: "http://localhost:9200",
-});
+let maxId = 0;
+while (true) {
+  const sqlResponse = await getData(
+    `SELECT TOP(500) * FROM Urunler u LEFT OUTER JOIN Markalar m ON u.MarkaId = m.MarkaId WHERE u.urunId > ${maxId} ORDER BY urunId`
+  );
+  const dataList = sqlResponse.recordset;
+  const returnedMaxId = Math.max(...dataList.map((x) => x.UrunId));
 
-console.dir(getData(sql, "select * from aaa"));
+  if (maxId == returnedMaxId) break;
+  else maxId = returnedMaxId;
+
+  await insertBulk(dataList, 'dorduncu_deneme');
+  console.log({ returnedMaxId });
+  console.log({ maxId });
+}

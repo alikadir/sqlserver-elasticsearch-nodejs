@@ -1,18 +1,20 @@
-export const insertBulk = async (client, dataList, indexName) => {
-  const body = dataList.flatMap((doc) => [
-    { index: { _index: indexName } },
-    doc,
-  ]);
+import { Client } from '@elastic/elasticsearch';
+import sql from 'mssql';
 
-  const { body: bulkResponse } = await client.bulk({ refresh: true, body });
-  if (bulkResponse.errors) console.error(bulkResponse.errors);
-  else {
-    const { body: count } = await client.count({ index: indexName });
-    console.log(count);
-  }
+await sql.connect('mssql://*');
+const client = new Client({
+  node: 'http://localhost:9200',
+});
+
+export const insertBulk = async (dataList, indexName) => {
+  try {
+    const body = dataList.flatMap((doc) => [{ index: { _index: indexName } }, doc]);
+
+    const { body: bulkResponse } = await client.bulk({ refresh: true, body });
+  } catch {}
 };
 
-export const insert = async (client, data, indexName) => {
+export const insert = async (data, indexName) => {
   await client.index({
     index: indexName,
     refresh: true,
@@ -20,6 +22,6 @@ export const insert = async (client, data, indexName) => {
   });
 };
 
-export const getData = async (sql, query) => {
-  return await sql.query`select * from mytable`;
+export const getData = async (query) => {
+  return await sql.query(query);
 };
