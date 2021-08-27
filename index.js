@@ -1,17 +1,23 @@
 import { getData, insertBulk } from './operations.js';
 
-let maxId = 0;
+
+const indexName = 'product_indx';
+const readBlockSize = 500;
+let cursorPosition = 0;
+
 while (true) {
   const sqlResponse = await getData(
-    `SELECT TOP(500) * FROM Urunler u LEFT OUTER JOIN Markalar m ON u.MarkaId = m.MarkaId WHERE u.urunId > ${maxId} ORDER BY urunId`
+    `SELECT TOP(${readBlockSize}) * FROM Urunler u LEFT OUTER JOIN Markalar m ON u.MarkaId = m.MarkaId WHERE u.urunId > ${cursorPosition} ORDER BY urunId`
   );
   const dataList = sqlResponse.recordset;
-  const returnedMaxId = Math.max(...dataList.map((x) => x.UrunId));
+  const returnedCursorPosition = Math.max(...dataList.map((x) => x.UrunId));
 
-  if (maxId == returnedMaxId) break;
-  else maxId = returnedMaxId;
+  if (cursorPosition == returnedCursorPosition) break;
+  else cursorPosition = returnedCursorPosition;
 
-  await insertBulk(dataList, 'dorduncu_deneme');
-  console.log({ returnedMaxId });
-  console.log({ maxId });
+  await insertBulk(dataList, 'product_indx');
+  console.log({ returnedCursorPosition });
+  console.log({ cursorPosition });
 }
+
+console.log('The Transfer has finished.');
